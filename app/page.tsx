@@ -90,7 +90,7 @@ The final output must strictly follow below exact json structure:
 
     "role": "...",
 
-    "duration": "MM-YYYY - MM-YYYY",
+    "duration": "MM.YYYY - MM.YYYY",
 
     "experience": ["...", "...", "..."]
 
@@ -131,7 +131,7 @@ The final output must strictly follow below exact json structure:
 
   • "role": Exact job title from milestones.
 
-  • "duration": {"start": "MM-YYYY", "end": "MM-YYYY"} matching the provided timeline.
+  • "duration": {"start": "M.YYYY", "end": "MM.YYYY"} matching the provided timeline.
 
   • "experience": Array of AT LEAST 9 strings (bullet points).
 - Each bullet string must clearly explain: what project/system was built, technologies used, why chosen, business problem solved, and measurable impact delivered.
