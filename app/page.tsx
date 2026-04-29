@@ -26,6 +26,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { createExhaustiveParamsProxy } from "next/dist/server/app-render/instant-validation/instant-samples"
+import { Label } from "recharts"
 
 const STORAGE_KEY_PERSONAL = "resume_personal_info"
 const STORAGE_KEY_EDUCATION = "resume_education"
@@ -131,7 +132,7 @@ The final output must strictly follow below exact json structure:
 
   • "role": Exact job title from milestones.
 
-  • "duration": {"start": "MM.YYYY", "end": "MM.YYYY"} matching the provided timeline.
+  • "duration": "MM.YYYY - MM.YYYY" matching the provided timeline.
 
   • "experience": Array of AT LEAST 9 strings (bullet points).
 - Each bullet string must clearly explain: what project/system was built, technologies used, why chosen, business problem solved, and measurable impact delivered.
@@ -306,6 +307,9 @@ export default function Home() {
 
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [previewOpen, setPreviewOpen] = useState(false)
+  const [previewEditable, setPreviewEditable] = useState(false)
+
+  const [companyName, setCompanyName] = useState("")
   // const [promptOpen, setPromptOpen] = useState(false)
 
   // Load saved data on mount (prompt is no longer loaded from storage)
@@ -343,6 +347,13 @@ export default function Home() {
   }, [])
 
   // Prompt is no longer saved to localStorage
+  const handlePreviewEditable = () => {
+    setPreviewEditable(!previewEditable)
+  }
+
+  const handleSetCompanyName = (name: string) => {
+    setCompanyName(name)
+  }
 
   const handleSaveSettings = () => {
     localStorage.setItem(STORAGE_KEY_PERSONAL, JSON.stringify(personalInfo))
@@ -449,7 +460,12 @@ export default function Home() {
 
     try {
       const { generateResumePDF } = await import("@/lib/generate-pdf")
-      const filename = `${personalInfo.fullName.replace(/\s+/g, "_")}_Resume.pdf`
+      // const filename = `${personalInfo.fullName.replace(/\s+/g, "_")}_Resume.pdf`
+      const filename = `${personalInfo.fullName.replace(/\s+/g, "_")}_Resume${
+        companyName?.trim()
+          ? `_${companyName.trim().replace(/\s+/g, "_")}`
+          : ""
+      }.pdf`
       await generateResumePDF(resumeData, filename)
     } catch (error) {
       console.error("PDF generation error:", error)
@@ -461,7 +477,7 @@ export default function Home() {
     <main className="min-h-screen bg-background py-8 px-4">
       <div className="max-w-3xl mx-auto">
         {/* Header with Settings Button */}
-        <div className="flex items-start justify-between mb-8">
+        <div className="flex items-start justify-between mb-8 gap-6">
           <Button
             variant="outline"
             size="icon"
@@ -473,7 +489,7 @@ export default function Home() {
 
           <div className="text-center flex-1">
             <h1 className="text-4xl font-bold text-foreground mb-2">
-              PDF Resume Generator
+              Resume Generator
             </h1>
             <p className="text-muted-foreground">
               Enter a job description to generate a tailored resume
@@ -700,7 +716,8 @@ Software Engineer, 09/2015 - 09/2019
             <div className="border rounded-lg overflow-hidden shadow-sm my-4">
               <ResumePreview
                 data={resumeData}
-                editable={false}
+                editable={previewEditable}
+                onDataChange={setResumeData}
               />
             </div>
           )}
@@ -709,6 +726,24 @@ Software Engineer, 09/2015 - 09/2019
             <Button variant="outline" onClick={() => setPreviewOpen(false)}>
               Close
             </Button>
+            <Button variant="outline" onClick={() => handlePreviewEditable()}>
+              {previewEditable ? "Done" : "Edit"}
+            </Button>
+            <div className="flex items-center gap-4 max-w-xl">
+              <Label
+                className="w-40 text-sm font-medium text-gray-700"
+              >
+                Target Company Name
+              </Label>
+
+              <Input
+                id="companyName"
+                value={companyName}
+                onChange={(e) => handleSetCompanyName(e.target.value)}
+                placeholder="Enter target company name"
+                className="flex-1 rounded-xl border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
+              />
+            </div>
             <Button onClick={handleDownloadPDF}>
               <FileDown className="h-4 w-4 mr-2" />
               Download PDF
